@@ -145,13 +145,6 @@ def DaemonDirectoryWatcher(
         "files" : contents
     }
 
-    tmp = date_ref.strftime('%Y-%m-%d %H:%M:%S')
-    logging.info(f"date_ref:{tmp}")
-    tmp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    logging.info(f"date_now:{tmp}")
-    tmp = mintues_between(date_ref, datetime.now())
-    logging.info(f"pivot:{tmp}")
-
     path = current["path"]
     taille = len(current["files"])
     d = current["last_execution"]
