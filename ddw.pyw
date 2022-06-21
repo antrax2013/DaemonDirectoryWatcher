@@ -10,7 +10,9 @@ logging.basicConfig(filename=log_file, level=logging.INFO, format="%(asctime)s [
 processus = DaemonThread(
     "C:\\Users\\cyril\\OneDrive\\Documents\\Solaris\\nextcloud\\Solaris",
     "C:\\Users\\cyril\\OneDrive\\Documents\\Solaris\\nextcloud\\Cyril",
-    15
+    1,
+    "./contentTable_template.md",
+    "C:\\Users\\cyril\\OneDrive\\Documents\\Solaris\\nextcloud\\Solaris\Sommaire.md"
 ) 
  
 # starting of Thread T
