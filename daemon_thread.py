@@ -47,7 +47,8 @@ class DaemonThread(Thread):
         toaster.show_toast("DDW", f"Started - frequency : {timer}")
 
         #eclude content table file of watching
-        excluded_files =[self._content_table_path.replace("\\","/").replace("//","/").split("/")[-1]] 
+        excluded_files =[self._content_table_path.replace("\\","/").replace("//","/").split("/")[-1]]
+        excluded_directories=[".git"]
 
         # for i in range(1,2):
         while(True):
@@ -55,6 +56,7 @@ class DaemonThread(Thread):
                 self._watched_path,
                 self._save_path,
                 self._save_file_name,
+                excluded_directories=excluded_directories,
                 excluded_files=excluded_files              
             )
 

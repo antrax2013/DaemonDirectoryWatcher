@@ -63,7 +63,7 @@ def read_file(filepath) :
     return datas
 
 ### Function to crawl directory content
-def directory_spider(input_dir, path_pattern="", file_pattern="", max_results=1000, date_ref=datetime.now(), excluded_files=[]):
+def directory_spider(input_dir, path_pattern="", file_pattern="", max_results=1000, date_ref=datetime.now(), excluded_directories=[], excluded_files=[]):
     
     file_paths = []
     now = datetime.now()
@@ -73,6 +73,12 @@ def directory_spider(input_dir, path_pattern="", file_pattern="", max_results=10
         raise FileNotFoundError("Could not find path: %s"%(input_dir))
     
     for dirpath, dirnames, filenames in os.walk(input_dir) :
+
+        # filter excluded directories
+        reject = [item for item in excluded_directories if item in dirpath]
+        if reject :
+            continue
+
         if re.search(path_pattern, dirpath):
             
             file_list = [item for item in filenames if re.search(file_pattern,item)]
@@ -172,6 +178,7 @@ def DaemonDirectoryWatcher(
     watched_folder, 
     save_path="", 
     save_file_name="ddw-informations.json",
+    excluded_directories=[],
     excluded_files=[]) :
 
     path_from = watched_folder
@@ -205,7 +212,7 @@ def DaemonDirectoryWatcher(
         date_ref = datetime.strptime(d,'%Y-%m-%d %H:%M:%S') 
 
     ## WRITE
-    contents = directory_spider(path_from, date_ref=date_ref, excluded_files=excluded_files)
+    contents = directory_spider(path_from, date_ref=date_ref, excluded_directories=excluded_directories, excluded_files=excluded_files)
 
     current = {
         "path": path_from.split("\\")[-1],       
