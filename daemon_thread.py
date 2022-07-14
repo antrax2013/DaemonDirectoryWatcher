@@ -1,6 +1,7 @@
 from xmlrpc.client import DateTime
 from ddw_functions import *
 from threading import *
+import subprocess
 
 #pip install win10toast
 from win10toast import ToastNotifier
@@ -67,6 +68,7 @@ class DaemonThread(Thread):
                 #if option genereate content table is set on and have any changes
                 if self._template_content_table_path != "-1":
                     self.generate_content_table()
+                    self.git_update_remote_repository()
 
 
             time.sleep(timer)
@@ -82,8 +84,13 @@ class DaemonThread(Thread):
         write_file(self._content_table_path,template.replace("#Content#",res).replace("#Date#", datetime.now().strftime('%d/%m/%Y %H:%M')))
     ## end of generate_content_table
 
-    ## Git commit
-    os.system(f"git commit -am \"ddw - Auto commit {datetime.now().strftime('%d/%m/%Y %H:%M')} \" ")
-    os.system(f"git push --set-upstream Origine main")
+    ## Git commit : use local git account
+    def git_update_remote_repository(self):
+        ## change working directory
+        os.chdir(self._watched_path)
+        ## stage changes, commit and push
+        subprocess.call(["git", "add", "-A", "."], shell=True)
+        subprocess.call(["git", "commit", "-aqm", f"ddw - Auto commit {datetime.now().strftime('%d/%m/%Y %H:%M')} \" "], shell=True) 
+        subprocess.call(["git", "push", "-q", "--set-upstream", "Origine", "main"], shell=True) 
     ## end of Git commit
 ## end of class DaemonThread
