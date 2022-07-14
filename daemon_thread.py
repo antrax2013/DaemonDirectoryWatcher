@@ -81,4 +81,9 @@ class DaemonThread(Thread):
 
         write_file(self._content_table_path,template.replace("#Content#",res).replace("#Date#", datetime.now().strftime('%d/%m/%Y %H:%M')))
     ## end of generate_content_table
+
+    ## Git commit
+    os.system(f"git commit -am \"ddw - Auto commit {datetime.now().strftime('%d/%m/%Y %H:%M')} \" ")
+    os.system(f"git push --set-upstream Origine main")
+    ## end of Git commit
 ## end of class DaemonThread
