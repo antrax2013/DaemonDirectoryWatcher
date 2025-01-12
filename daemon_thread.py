@@ -53,44 +53,50 @@ class DaemonThread(Thread):
 
         # for i in range(1,2):
         while(True):
-            results =  DaemonDirectoryWatcher(
-                self._watched_path,
-                self._save_path,
-                self._save_file_name,
-                excluded_directories=excluded_directories,
-                excluded_files=excluded_files              
-            )
-
-            tmp = results["nb_changes"]
-            if(tmp>0) :                
-                toaster.show_toast("DDW",f"NextCloud - Solaris Nb Changes: {tmp}")
-                
-                #if option genereate content table is set on and have any changes
-                if self._template_content_table_path != "-1":
-                    self.generate_content_table()
-                    self.git_update_remote_repository()
-
-
+            DaemonThread.core_process(self._watched_path, self._save_path, self._save_file_name, excluded_directories, excluded_files, self._template_content_table_path, self._save_full_file_name, self._content_table_path, toaster)
             time.sleep(timer)
     ## end of run
 
-    ## Methode to generate content table
-    def generate_content_table(self) :
-        template = read_file(self._template_content_table_path)
+    @staticmethod
+    def core_process(watched_path, save_path, save_file_name, excluded_directories, excluded_files, template_content_table_path, save_full_file_name, content_table_path, toaster=None, force=False) :
+        results =  DaemonDirectoryWatcher(
+            watched_path,
+            save_path,
+            save_file_name,
+            excluded_directories,
+            excluded_files              
+        )
 
-        datas = json.loads(read_file(self._save_full_file_name))
+        tmp = results["nb_changes"]
+        if(tmp>0 or force) :                
+            if not toaster is None :
+                toaster.show_toast("DDW",f"NextCloud - Solaris Nb Changes: {tmp}")
+            
+            #if option genereate content table is set on and have any changes
+            if template_content_table_path != "-1":
+                DaemonThread.generate_content_table(template_content_table_path, save_full_file_name, content_table_path)
+                DaemonThread.git_update_remote_repository(watched_path)
+
+
+    ## Methode to generate content table
+    @staticmethod
+    def generate_content_table(template_content_table_path, save_full_file_name, content_table_path) :
+        template = read_file(template_content_table_path)
+
+        datas = json.loads(read_file(save_full_file_name))
         res = generate_content_table(datas)
 
-        write_file(self._content_table_path,template.replace("#Content#",res).replace("#Date#", datetime.now().strftime('%d/%m/%Y %H:%M')))
+        write_file(content_table_path,template.replace("#Content#",res).replace("#Date#", datetime.now().strftime('%d/%m/%Y %H:%M')))
     ## end of generate_content_table
 
     ## Git commit : use local git account
-    def git_update_remote_repository(self):
+    @staticmethod
+    def git_update_remote_repository(watched_path):
         ## change working directory
-        os.chdir(self._watched_path)
+        os.chdir(watched_path)
         ## stage changes, commit and push
         subprocess.call(["git", "add", "-A", "."], shell=True)
         subprocess.call(["git", "commit", "-aqm", f"ddw - Auto commit {datetime.now().strftime('%d/%m/%Y %H:%M')} \" "], shell=True) 
-        subprocess.call(["git", "push", "-q", "--set-upstream", "Origine", "main"], shell=True) 
+        subprocess.call(["git", "push", "-q", "--set-upstream", "origin", "main"], shell=True) 
     ## end of Git commit
 ## end of class DaemonThread
